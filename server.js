@@ -10,19 +10,16 @@ process.on('uncaughtException', (err) => {
 dotenv.config({ path: './config.env' });
 const app = require('./app');
 
-// const DB = process.env.DATABASE.replace(
-//   '<PASSWORD>',
-//   process.env.DATABASE_PASSWORD
-// );
+const DB = process.env.DATABASE.replace(
+  '<PASSWORD>',
+  process.env.DATABASE_PASSWORD
+);
 
 mongoose.set('strictQuery', false);
 mongoose
-  .connect(
-    'mongodb+srv://qwerty:lSfn3cullxxYWamY@cluster0.7saun.mongodb.net/?retryWrites=true&w=majority',
-    {
-      useNewUrlParser: true,
-    }
-  )
+  .connect(DB, {
+    useNewUrlParser: true,
+  })
   .then(() => console.log('DB connection successful!'));
 
 const port = process.env.PORT || 3000;
