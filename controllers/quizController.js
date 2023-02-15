@@ -5,16 +5,11 @@ exports.submitQuiz = async function (req, res, next) {
   let correct = 0;
   const { ans } = req.body;
   for (const key in ans) {
-    // console.log(`${key}: ${ans[key]}`);
     await Question.findById(key)
       .exec()
       .then((data) => {
-        console.log(data['correctAns'].trim());
-
-        console.log(ans[key]);
-        console.log(data['correctAns'].trim() === ans[key].trim());
-        if (data['correctAns'].trim() === ans[key].trim()) {
-          correct += 1;
+        if (data['correctAns'] && ans[key]) {
+          if (data['correctAns'].trim() === ans[key].trim()) correct += 1;
         }
       });
   }

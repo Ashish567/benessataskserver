@@ -14,8 +14,6 @@ const signToken = (id) => {
 
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
-  console.log('create and send token');
-  console.log(token);
   user.password = undefined;
   res
     .cookie('jwt', token, {
@@ -60,7 +58,6 @@ exports.signup = async (req, res, next) => {
 
     if (newUser) await createSendToken(newUser, 201, req, res);
   } catch (err) {
-    console.log(err);
     res.status(400).send({
       messsage: err,
     });
@@ -71,14 +68,26 @@ exports.login = async (req, res, next) => {
   const { email, password, numid } = req.body;
   console.log(email, password, numid);
   // 1) Check if email and password exist
-  if (!email && !numid) {
-    return next(new AppError('Please provide email or id!', 400));
-  }
-  if (!email && !password) {
-    return next(new AppError('Please provide email and password!', 400));
-  }
-  if (!numid && !password) {
-    return next(new AppError('Please provide id and password!', 400));
+  // if (!email && !numid) {
+  //   console.log("1st case")
+  //   return next(new AppError('Please provide email or id!', 400));
+  // }
+  // if (!email && !password) {
+  //   console.log("2nd case")
+  //   return next(new AppError('Please provide email and password!', 400));
+  // }
+  // if (!numid && !password) {
+  //   console.log("3rd case")
+  //   return next(new AppError('Please provide id and password!', 400));
+  // }
+  if (!password) {
+    if (!email) {
+      console.log('2nd case');
+      return next(new AppError('Please provide email and password!', 400));
+    } else {
+      console.log('3rd case');
+      return next(new AppError('Please provide id and password!', 400));
+    }
   }
   const user = await User.findOne({ $or: [{ email }, { numid }] })
     .select('+password')
@@ -91,8 +100,7 @@ exports.login = async (req, res, next) => {
   console.log(user);
   if (!user || !(await user.correctPassword(password, user.password))) {
     const error = new AppError('Incorrect email or password', 401);
-    console.log('bet error');
-    console.log(error);
+
     next(error);
     // return res.json({
     //   message: 'Incorrect email or password',
@@ -116,8 +124,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
   let token;
   // token = req.headers.cookie.split('jwt=')[1];
-  console.log('catching error');
-  console.log(req.headers);
+
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
@@ -135,7 +142,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // 2) Verification token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  console.log(decoded);
+
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
   console.log(currentUser);
